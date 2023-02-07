@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>insta485</title>
+</head>
+    <body>
+        <header>
+            <a href="/">
+                <img src="/images/logo.png" alt="black and white instagram logo">
+            </a>
+            <a href="/explore/">explore</a>
+            <a href="/users/{{logname}}/">{{logname}}</a>
+        </header>
+        <div>
+            <h1>Discover People</h1>
+            {% for account in users %}
+                <img src="{{account.user_img_url}}" alt="followers's icon">
+                <p><a href="/users/{{account.username}}/">{{account.username}}</a></p>
+                <form action="/following/?target=/explore/" method="post" enctype="multipart/form-data">
+                    <input type="submit" name="follow" value="follow"/>
+                    <input type="hidden" name="username" value="{{account.username}}"/>
+                    <input type="hidden" name="operation" value="follow"/>
+                </form>
+            {% endfor %}
+        </div>
+    </body>
+</html>
