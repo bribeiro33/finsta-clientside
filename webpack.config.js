@@ -14,7 +14,6 @@ module.exports = {
     path: path.join(__dirname, "/insta485/static/js/"),
     filename: "bundle.js",
   },
-  devtool: "source-map",
   module: {
     rules: [
       {
@@ -39,4 +38,5 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
+  devtool: "source-map"
 };
