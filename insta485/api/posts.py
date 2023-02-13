@@ -17,6 +17,7 @@ def error_handler(status):
         "message": message,
         "status_code": status
     }
+    return jsonify(**error), status
 
 def access_control():
     """Make sure user is autheticated."""
@@ -217,7 +218,6 @@ def get_posts():
         return error_handler(400)
 
     # offset specifies the number of rows to skip before starting to return rows
-    # TODO: check if offset is correct
     offset = size * page 
     # Query db for all user posts and user following posts
     # limit specifies the number of rows to return (default 10)
@@ -247,7 +247,6 @@ def get_posts():
 def get_post(postid_url_slug):
     """Return post on postid."""
     username = access_control()
-    
     # Query db for post info given postid and owner info
     # User info isn't in posts page
     connection = insta485.model.get_db()
@@ -266,6 +265,6 @@ def get_post(postid_url_slug):
     # Abort if there is no post, not found
     if not post_info:
         return error_handler(404)
-    
+
     json_result = post_json(post_info, connection)
     return jsonify(**json_result)
