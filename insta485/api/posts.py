@@ -19,7 +19,7 @@ def error_handler(status):
 
 def access_control():
     """Make sure user is autheticated."""
-    # If there's no Authorization header in the request, abort
+    # If there's no Authorization header or an active flask session, abort
     if not flask.request.authorization and not flask.session:
         return error_handler(403)
 
@@ -47,8 +47,8 @@ def access_control():
         if not correct_pass:
             return error_handler(403)
 
-        # Verify password by computing hashed pass w/ SHA512 of submitted password
-        #   and comparing it against the db password
+        # Verify password by computing hashed pass w/ SHA512 of submitted 
+        # password and comparing it against the db password
         algorithm, salt, db_password = correct_pass['password'].split('$')
 
         # Slightly modified from spec
@@ -59,6 +59,9 @@ def access_control():
 
         if submitted_password_hash != db_password:
             return error_handler(403)
+        
+        #Initialize cookies
+        flask.session["user"] = username
 
     # Cookie authentication
     else: 
@@ -89,7 +92,7 @@ def comments_json(cur, connection):
             else False
         )
         comment["ownerShowUrl"] = "/users/" + comment["owner"] + '/'
-        comment["url"] = "/api/v1/comments/" + comment["commentid"] + '/'
+        comment["url"] = "/api/v1/comments/" + str(comment["commentid"]) + '/'
 
     return comments_response
 
@@ -97,14 +100,15 @@ def comments_json(cur, connection):
 def likes_json(cur, connection):
     """Return json representation of likes."""
     # Get number of likes on the post from db
-    cur_likes = connection.execute(
+    like_cur = connection.execute(
         "SELECT likeid, owner "
         "FROM likes "
-        "WHERE postid = ?"
-        (cur['postid'], )
+        "WHERE postid = ?", 
+        (cur["postid"], )
     )
-    likes_response = cur_likes.fecthall()
-    
+    #likes_response = cur_likes.fecthall()
+    likes_response = like_cur.fetchall()
+
     # if the like's owner is the loggedin user, get the likeid
     likeid = None
     for like in likes_response:
@@ -114,7 +118,7 @@ def likes_json(cur, connection):
     # If the loggedin user doesn't like the post, like url is null
     likeurl = None
     if likeid:
-        likeurl = "/api/v1/likes/" + likeid + "/"
+        likeurl = "/api/v1/likes/" + str(likeid) + "/"
 
     # If url exists, lognameLikesThis is true
     # The number of likes is the number of entries in likes_response
@@ -137,7 +141,7 @@ def posts_json(postid_lte, size, page, cur):
         for post in cur:
             post_json = {
                 "postid": post['postid'],
-                "url": "/api/v1/posts/" + cur['postid'] + "/"
+                "url": "/api/v1/posts/" + str(post['postid']) + "/"
             }
             results.append(post_json)
         
@@ -152,12 +156,12 @@ def posts_json(postid_lte, size, page, cur):
             next = "/api/v1/posts/" + (
                     f"?size={size}&page={page+1}&postid_lte={postid_lte}"
                 )
-
+    url = flask.request.environ.get('PATH_INFO', '')
     # url is the full url of the request, path + query
     posts_context = {
         "next": next, 
         "results": results,
-        "url": flask.request.url
+        "url": url
     }
     return posts_context
 
@@ -168,16 +172,16 @@ def post_json(cur, connection):
     likes = likes_json(cur, connection)
     post = {
         "comments": comments,
-        "comments_url": "/api/v1/comments/?postid=" + cur['postid'],
-        "created": cur['created'],
-        "imgURL": "/uploads/" + cur['post_filename'], 
+        "comments_url": "/api/v1/comments/?postid=" + str(cur['postid']),
+        "created": str(cur['created']),
+        "imgUrl": "/uploads/" + cur['post_filename'], 
         "likes": likes,
         "owner": cur['owner'],
         "ownerImgUrl": "/uploads/" + cur['user_filename'],
         "ownerShowUrl": "/users/" + cur['owner'] + "/",
-        "postShowUrl": "/posts/" + cur['postid'] + "/",
+        "postShowUrl": "/posts/" + str(cur['postid']) + "/",
         "postid": cur['postid'],
-        "url": flask.request.path
+        "url": flask.request.environ.get('PATH_INFO', '')
     }
     return post
 
@@ -209,7 +213,7 @@ def get_posts():
 
     # offset specifies the number of rows to skip before starting to return rows
     # TODO: check if offset is correct
-    offset = 10 * (page - 1)
+    offset = 10 * page 
     # Query db for all user posts and user following posts
     # limit specifies the number of rows to return (default 10)
     connection = insta485.model.get_db()
@@ -218,19 +222,19 @@ def get_posts():
         "FROM posts "
         "WHERE owner = ? "
         "UNION "
-        "SELECT posts.postid "
+        "SELECT posts.postid, posts.owner "
         "FROM following "
         "JOIN posts "
         "ON following.username2 = posts.owner "
         "WHERE following.username1 == ? "
         "ORDER BY postid DESC "
         "LIMIT ? OFFSET ?",
-        (username, username, page, offset, )
+        (username, username, size, offset, )
     )   
     posts_response = cur_post.fetchall()
 
-    posts_json = posts_json(postid_lte, size, page, posts_response)
-    return jsonify(**posts_json)
+    json_result = posts_json(postid_lte, size, page, posts_response)
+    return jsonify(**json_result)
 
 
 
@@ -244,7 +248,7 @@ def get_post(postid_url_slug):
     connection = insta485.model.get_db()
     cur_post = connection.execute(
         "SELECT posts.owner, posts.filename AS post_filename, "
-        "posts.created, posts.postid, users.filename as user_filename"
+        "posts.created, posts.postid, users.filename as user_filename "
         "FROM posts "
         "JOIN users "
         "ON posts.owner = users.username "
@@ -258,5 +262,5 @@ def get_post(postid_url_slug):
     if not post_info:
         return error_handler(404)
     
-    post_json = post_json(post_info, connection)
-    return jsonify(**post_json)
+    json_result = post_json(post_info, connection)
+    return jsonify(**json_result)
