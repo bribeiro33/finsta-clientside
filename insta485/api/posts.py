@@ -1,5 +1,6 @@
 """REST API for posts."""
 import hashlib
+import sys
 import flask
 from flask import jsonify
 import insta485
@@ -144,9 +145,9 @@ def posts_json(postid_lte, size, page, cur):
                 "url": "/api/v1/posts/" + str(post['postid']) + "/"
             }
             results.append(post_json)
-        
-        # postid_lte is default if = -1, set to most recent post
-        if postid_lte == -1:
+
+        # postid_lte is default val if = maxsize, set to most recent post
+        if postid_lte == sys.maxsize:
             postid_lte = cur[0]['postid']
 
         # next is "" if number of posts < size of page
@@ -156,8 +157,12 @@ def posts_json(postid_lte, size, page, cur):
             next = "/api/v1/posts/" + (
                     f"?size={size}&page={page+1}&postid_lte={postid_lte}"
                 )
-    url = flask.request.environ.get('PATH_INFO', '')
     # url is the full url of the request, path + query
+    path = flask.request.path
+    query_string = flask.request.query_string.decode("utf-8")
+    url = path
+    if query_string:
+        url = path + "?" + query_string
     posts_context = {
         "next": next, 
         "results": results,
@@ -206,30 +211,30 @@ def get_posts():
     size = flask.request.args.get("size", default=10, type=int)
     page = flask.request.args.get("page", default=0, type=int)
     # default should be to most recent postid, need to change once have posts
-    postid_lte = flask.request.args.get("postid_lte", default=-1, type=int)
+    postid_lte = flask.request.args.get("postid_lte", default=sys.maxsize, type=int)
     # size and page need to be non-neg ints, flask coerced to int
     if size < 0 or page < 0:
         return error_handler(400)
 
     # offset specifies the number of rows to skip before starting to return rows
     # TODO: check if offset is correct
-    offset = 10 * page 
+    offset = size * page 
     # Query db for all user posts and user following posts
     # limit specifies the number of rows to return (default 10)
     connection = insta485.model.get_db()
     cur_post = connection.execute(
         "SELECT posts.postid, posts.owner "
         "FROM posts "
-        "WHERE owner = ? "
+        "WHERE owner = ? AND posts.postid <= ? "
         "UNION "
         "SELECT posts.postid, posts.owner "
         "FROM following "
         "JOIN posts "
         "ON following.username2 = posts.owner "
-        "WHERE following.username1 == ? "
+        "WHERE following.username1 == ? AND posts.postid <= ? "
         "ORDER BY postid DESC "
         "LIMIT ? OFFSET ?",
-        (username, username, size, offset, )
+        (username, postid_lte, username, postid_lte, size, offset, )
     )   
     posts_response = cur_post.fetchall()
 
