@@ -6,6 +6,8 @@ import insta485
 
 def error_handler(status):
     """Error handler for client errors."""
+    if status == 400:
+        message = "Bad Request"
     if status == 403:
         message = "Forbidden"
     if status == 404:
@@ -123,6 +125,42 @@ def likes_json(cur, connection):
     }
     return likes
 
+def posts_json(postid_lte, size, page, cur):
+    """Returns the JSON representation of paginated posts."""
+    # cur here is all the relevant posts in the db
+    # TODO: check url result when empty, unsure
+    if not cur: 
+        next = ""
+        results = []
+    else:
+        results = []
+        for post in cur:
+            post_json = {
+                "postid": post['postid'],
+                "url": "/api/v1/posts/" + cur['postid'] + "/"
+            }
+            results.append(post_json)
+        
+        # postid_lte is default if = -1, set to most recent post
+        if postid_lte == -1:
+            postid_lte = cur[0]['postid']
+
+        # next is "" if number of posts < size of page
+        if len(cur) < size:
+            next = ""
+        else: 
+            next = "/api/v1/posts/" + (
+                    f"?size={size}&page={page+1}&postid_lte={postid_lte}"
+                )
+
+    # url is the full url of the request, path + query
+    posts_context = {
+        "next": next, 
+        "results": results,
+        "url": flask.request.url
+    }
+    return posts_context
+
 
 def post_json(cur, connection):
     """Return the JSON representation of one post."""
@@ -139,10 +177,9 @@ def post_json(cur, connection):
         "ownerShowUrl": "/users/" + cur['owner'] + "/",
         "postShowUrl": "/posts/" + cur['postid'] + "/",
         "postid": cur['postid'],
-        "url": "/api/v1/posts/" + cur['postid'] + "/"
+        "url": flask.request.path
     }
     return post
-    # "url": flask.request.path,
 
 @insta485.app.route('/api/v1/', methods=["GET"])
 def get_services():
@@ -161,20 +198,40 @@ def get_posts():
     """Return the 10 newest posts."""
     username = access_control()
 
+    # Get postid, size, and page from http request args
+    size = flask.request.args.get("size", default=10, type=int)
+    page = flask.request.args.get("page", default=0, type=int)
+    # default should be to most recent postid, need to change once have posts
+    postid_lte = flask.request.args.get("postid_lte", default=-1, type=int)
+    # size and page need to be non-neg ints, flask coerced to int
+    if size < 0 or page < 0:
+        return error_handler(400)
+
+    # offset specifies the number of rows to skip before starting to return rows
+    # TODO: check if offset is correct
+    offset = 10 * (page - 1)
     # Query db for all user posts and user following posts
+    # limit specifies the number of rows to return (default 10)
     connection = insta485.model.get_db()
     cur_post = connection.execute(
-        "SELECT postid, filename, owner, created "
+        "SELECT posts.postid, posts.owner "
         "FROM posts "
         "WHERE owner = ? "
         "UNION "
-        "SELECT posts.postid, posts.filename, posts.owner, posts.created "
-        "FROM following JOIN posts "
+        "SELECT posts.postid "
+        "FROM following "
+        "JOIN posts "
         "ON following.username2 = posts.owner "
         "WHERE following.username1 == ? "
-        "ORDER BY postid DESC",
-        (username, username, )
+        "ORDER BY postid DESC "
+        "LIMIT ? OFFSET ?",
+        (username, username, page, offset, )
     )   
+    posts_response = cur_post.fetchall()
+
+    posts_json = posts_json(postid_lte, size, page, posts_response)
+    return jsonify(**posts_json)
+
 
 
 @insta485.app.route('/api/v1/posts/<int:postid_url_slug>/')
