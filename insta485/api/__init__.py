@@ -1,4 +1,5 @@
 """Insta485 REST API."""
 
 
-from insta485.api.posts import get_post, get_services, get_posts
+from insta485.api.posts import get_services, get_posts, get_post
+from insta485.api.comments import post_comment
