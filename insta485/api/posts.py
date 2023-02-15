@@ -207,7 +207,9 @@ def get_services():
 def get_posts():
     """Return the 10 newest posts."""
     username = access_control()
-
+    # if access_control returns a tuple, that means an error occured
+    if type(username) is tuple:
+        return username
     # Get postid, size, and page from http request args
     size = flask.request.args.get("size", default=10, type=int)
     page = flask.request.args.get("page", default=0, type=int)
@@ -247,6 +249,9 @@ def get_posts():
 def get_post(postid_url_slug):
     """Return post on postid."""
     username = access_control()
+    # if access_control returns a tuple, that means an error occured
+    if type(username) is tuple:
+        return username
     # Query db for post info given postid and owner info
     # User info isn't in posts page
     connection = insta485.model.get_db()

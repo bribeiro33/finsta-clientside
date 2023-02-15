@@ -6,6 +6,9 @@ import insta485
 def post_comment():
     """Posts a new comment with the given text and id."""
     username = insta485.api.posts.access_control()
+    # if access_control returns a tuple, that means an error occured
+    if type(username) is tuple:
+        return username
     connection = insta485.model.get_db()
 
     text = request.json.get("text")
@@ -52,6 +55,10 @@ def post_comment():
 def delete_comment(cmtid_slug):
     """Delete a comment given a commentid."""
     username = insta485.api.posts.access_control()
+    # if access_control returns a tuple, that means an error occured
+    if type(username) is tuple:
+        return username
+
     connection = insta485.model.get_db()
 
     # Make sure commentid exists, if not, error 404 not found
