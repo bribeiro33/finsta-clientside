@@ -12,7 +12,7 @@ export default function Post({ url }) {
   const [owner, setOwner] = useState("");
   const [time, setTime] = useState("");
   const [postid, setPostid] = useState("");
-  const [like, setLike] = useState(false);
+  const [likeStatus, setLikeStatus] = useState("");
 
   useEffect(() => {
     // Declare a boolean flag that we can use to cancel the API request.
@@ -32,6 +32,7 @@ export default function Post({ url }) {
           setOwner(data.owner);
           setTime(moment(data.created).fromNow());
           setPostid(data.postid);
+          setLikeStatus(data.likes.lognameLikesThis);
         }
       })
       .catch((error) => console.log(error));
@@ -45,7 +46,7 @@ export default function Post({ url }) {
   }, [url]);
   // Construct owner url path using owner object
   const ownerUrl = `/users/${  owner  }/`;
-  
+  console.log("likeStatus_post:", likeStatus);
   // Render post image and post owner
   return (
     <div className="post">
@@ -53,7 +54,7 @@ export default function Post({ url }) {
       <img src={imgUrl} alt="post_image" />
       <p>{time}</p>
       <p>{postid}</p>
-      <LikeButton like={like} setLike={setLike} />
+      <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} postid={postid}/>
     </div>
   );
 }
