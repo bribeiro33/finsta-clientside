@@ -13,6 +13,7 @@ export default function Post({ url }) {
   const [time, setTime] = useState("");
   const [postid, setPostid] = useState("");
   const [likeStatus, setLikeStatus] = useState("");
+  const [likeCount, setLikeCount] = useState("");
 
   useEffect(() => {
     // Declare a boolean flag that we can use to cancel the API request.
@@ -33,6 +34,7 @@ export default function Post({ url }) {
           setTime(moment(data.created).fromNow());
           setPostid(data.postid);
           setLikeStatus(data.likes.lognameLikesThis);
+          setLikeCount(data.likes.numLikes);
         }
       })
       .catch((error) => console.log(error));
@@ -46,15 +48,28 @@ export default function Post({ url }) {
   }, [url]);
   // Construct owner url path using owner object
   const ownerUrl = `/users/${  owner  }/`;
-  console.log("likeStatus_post:", likeStatus);
-  // Render post image and post owner
+
+  // Double click on img --> post new like, update state
+  const handleImgLike = () => {
+    // If user originally liked post, do nothing
+    // If not, post new like
+    if (!likeStatus){
+      fetch(`/api/v1/likes/?postid=${postid}`, { method: 'POST' })
+        .then(() => {
+          setLikeStatus(true);
+          setLikeCount(likeCount + 1);
+        }); 
+    }      
+};
+  // Render post components
   return (
     <div className="post">
       <p><a href={ownerUrl}>{owner}</a></p>
-      <img src={imgUrl} alt="post_image" />
+      <img src={imgUrl} alt="post_image" onDoubleClick={handleImgLike}/>
       <p>{time}</p>
       <p>{postid}</p>
-      <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} postid={postid}/>
+      <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} likeCount={likeCount} setLikeCount={setLikeCount} postid={postid}/>
+      <p>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</p>
     </div>
   );
 }

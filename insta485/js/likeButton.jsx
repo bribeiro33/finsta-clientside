@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from "prop-types";
 
-export default function LikeButton(props) {
-    const { likeStatus, setLikeStatus, postid} = props;
+export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLikeCount, postid }) {
+    // const { likeStatus, setLikeStatus, likeCount, setLikeCount, postid } = props;
 
     const handleLikeButton = () => {
         // Use urls from REST API section to Post and Delete
         // If user originally liked post, get likeid and delete like
-        console.log("likeStatus_btn:", likeStatus);
         if (likeStatus){
             fetch(`/api/v1/posts/${postid}/`, { method: 'GET' })
                 .then((response) => {
@@ -24,13 +23,17 @@ export default function LikeButton(props) {
                 })
                 .then(() => {
                     setLikeStatus(false);
+                    setLikeCount(likeCount - 1);
                 });
                 // .catch((error) => {console.log(error)});
         }
         // If user originally disliked post, POST new like
         else {
             fetch(`/api/v1/likes/?postid=${postid}`, { method: 'POST' })
-                .then(() => {setLikeStatus(true)}); 
+                .then(() => {
+                    setLikeStatus(true);
+                    setLikeCount(likeCount + 1);
+                }); 
         }      
     };
 
@@ -42,7 +45,9 @@ export default function LikeButton(props) {
 }
 
 LikeButton.propTypes = {
-    likeStatus: PropTypes.bool.isRequired,
+    likeStatus: PropTypes.bool.isRequired, 
     setLikeStatus: PropTypes.func.isRequired,
-    postid: PropTypes.number.isRequired,
+    likeCount: PropTypes.number.isRequired,
+    setLikeCount: PropTypes.func.isRequired,
+    postid: PropTypes.number.isRequired, // number
 };
