@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 
 export default function Comments({ comments, postid }) {
     const [input, setInput] = useState("")
-    console.log(comments)
     // As user types, input changes and is displayed
     const handleChangeComment = (event) => {
         setInput(event.target.value);
@@ -29,7 +28,7 @@ export default function Comments({ comments, postid }) {
         <div>
             {
                 comments.map((comment) => (
-                    <div>
+                    <div key={comment.commentid}>
                         <p><a href={ comment.ownerShowUrl }>
                             { comment.owner };
                         </a></p>
@@ -50,6 +49,6 @@ export default function Comments({ comments, postid }) {
 }
 
 Comments.propTypes = {
-    comments: PropTypes.arrayOf(PropTypes.number, PropTypes.bool, PropTypes.string, PropTypes.string, PropTypes.string, PropTypes.string).isRequired,
-    postid: PropTypes.number.isRequired, // number
+    comments: PropTypes.arrayOf(PropTypes.shape).isRequired,
+    postid: PropTypes.number.isRequired, 
 };
