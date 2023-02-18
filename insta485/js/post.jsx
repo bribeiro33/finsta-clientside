@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from 'moment';
 import LikeButton from "./likeButton";
+import Comments from "./comments";
 // The parameter of this function is an object with a string called url inside it.
 // url is a prop for the Post component.
 
@@ -14,6 +15,7 @@ export default function Post({ url }) {
   const [postid, setPostid] = useState("");
   const [likeStatus, setLikeStatus] = useState("");
   const [likeCount, setLikeCount] = useState("");
+  const [comments, setComments] = useState("");
 
   useEffect(() => {
     // Declare a boolean flag that we can use to cancel the API request.
@@ -35,6 +37,7 @@ export default function Post({ url }) {
           setPostid(data.postid);
           setLikeStatus(data.likes.lognameLikesThis);
           setLikeCount(data.likes.numLikes);
+          setComments(data.comments);
         }
       })
       .catch((error) => console.log(error));
@@ -60,8 +63,13 @@ export default function Post({ url }) {
           setLikeCount(likeCount + 1);
         }); 
     }      
-};
+  };
   // Render post components
+  //console.log(`Post: ${comments}`)
+  // for (let i = 0; i < 2; i++) {
+  //   console.log(comments[i].commentid, comments[i].text)
+  // }
+
   return (
     <div className="post">
       <p><a href={ownerUrl}>{owner}</a></p>
@@ -70,6 +78,7 @@ export default function Post({ url }) {
       <p>{postid}</p>
       <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} likeCount={likeCount} setLikeCount={setLikeCount} postid={postid}/>
       <p>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</p>
+    {/* <Comments comments={comments} postid={postid} /> */}
     </div>
   );
 }
