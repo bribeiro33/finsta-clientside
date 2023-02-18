@@ -9,15 +9,15 @@ import Comments from "./comments";
 export default function Post({ url }) {
   /* Display all info for a single post */
 
-  const [imgUrl, setImgUrl] = useState("");
-  const [owner, setOwner] = useState("");
-  const [time, setTime] = useState("");
-  const [postid, setPostid] = useState("");
-  const [likeStatus, setLikeStatus] = useState("");
-  const [likeCount, setLikeCount] = useState("");
-  const [comments, setComments] = useState("");
+  const [imgUrl, setImgUrl] = useState(null);
+  const [owner, setOwner] = useState(null);
+  const [time, setTime] = useState(null);
+  const [postid, setPostid] = useState(null);
+  const [likeStatus, setLikeStatus] = useState(null);
+  const [likeCount, setLikeCount] = useState(null);
+  const [comments, setComments] = useState(null);
 
-  useEffect(() => {
+  useEffect( () => {
     // Declare a boolean flag that we can use to cancel the API request.
     let ignoreStaleRequest = false;
 
@@ -39,6 +39,9 @@ export default function Post({ url }) {
           setLikeCount(data.likes.numLikes);
           setComments(data.comments);
         }
+      })
+      .then(() => {
+        
       })
       .catch((error) => console.log(error));
 
@@ -64,11 +67,11 @@ export default function Post({ url }) {
         }); 
     }      
   };
-  // Render post components
-  //console.log(`Post: ${comments}`)
-  // for (let i = 0; i < 2; i++) {
-  //   console.log(comments[i].commentid, comments[i].text)
-  // }
+  
+  // Render post components if state has updated, return empty if not
+  if (!comments){
+    return <div />
+  }
 
   return (
     <div className="post">
@@ -78,7 +81,7 @@ export default function Post({ url }) {
       <p>{postid}</p>
       <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} likeCount={likeCount} setLikeCount={setLikeCount} postid={postid}/>
       <p>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</p>
-    {/* <Comments comments={comments} postid={postid} /> */}
+      <Comments comments={comments} postid={postid} />
     </div>
   );
 }
