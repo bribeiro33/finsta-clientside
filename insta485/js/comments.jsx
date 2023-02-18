@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from "prop-types";
 
-export default function Comments({ comments, postid }) {
+export default function Comments({ comments, setComments, postid }) {
     const [input, setInput] = useState("")
     // As user types, input changes and is displayed
     const handleChangeComment = (event) => {
         setInput(event.target.value);
     }
 
-    // Change to streamline
+    // TODO: Change to streamline
     const handleSubmitComment = (e) => {
         e.preventDefault();
         fetch(`/api/v1/comments/?postid=${postid}`, {
@@ -17,22 +17,25 @@ export default function Comments({ comments, postid }) {
             method: 'POST',
             body: JSON.stringify({text: input})
         }).then((response) => response.json())
-        .then(() => {
+        .then((data) => {
             // Make comment field empty again
+            setComments([...comments, data]);
             setInput("");
         })
         .catch(error => console.log(error));  
     }
-
     return (
         <div>
             {
                 comments.map((comment) => (
                     <div key={comment.commentid}>
-                        <p><a href={ comment.ownerShowUrl }>
-                            { comment.owner };
-                        </a></p>
-                        <span className="comment-text"> 
+                        <p style={{ display: "inline-block" }}>
+                            <a href={ comment.ownerShowUrl }>
+                            <strong>{ comment.owner }</strong>
+                            </a>
+                            &nbsp;&nbsp;
+                        </p> 
+                        <span className="comment-text" style={{ display: "inline-block" }}> 
                             { comment.text }
                         </span>
                     </div>
@@ -50,5 +53,6 @@ export default function Comments({ comments, postid }) {
 
 Comments.propTypes = {
     comments: PropTypes.arrayOf(PropTypes.shape).isRequired,
+    setComments: PropTypes.func.isRequired,
     postid: PropTypes.number.isRequired, 
 };

@@ -81,7 +81,7 @@ export default function Post({ url }) {
       <p>{postid}</p>
       <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} likeCount={likeCount} setLikeCount={setLikeCount} postid={postid}/>
       <p>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</p>
-      <Comments comments={comments} postid={postid} />
+      <Comments comments={comments} setComments={setComments} postid={postid} />
     </div>
   );
 }
