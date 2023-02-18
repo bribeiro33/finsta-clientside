@@ -2,6 +2,7 @@
 from flask import jsonify, request
 import insta485
 
+
 @insta485.app.route('/api/v1/likes/', methods=["POST"])
 def post_likes():
     """Posts a new like with the given id."""
@@ -16,12 +17,12 @@ def post_likes():
     # Error if post_id is a negative number or wasn't specified
     if postid < 0:
         return insta485.api.posts.error_handler(400)
-    
+
     # Make sure post exists in db, error if not found
     cur_post = connection.execute(
         "SELECT * "
         "FROM posts "
-        "WHERE postid = ?", 
+        "WHERE postid = ?",
         (postid, )
     )
     post_request = cur_post.fetchone()
@@ -32,7 +33,7 @@ def post_likes():
     cur_like = connection.execute(
         "SELECT owner "
         "FROM likes "
-        "WHERE postid = ?", 
+        "WHERE postid = ?",
         (postid, )
     )
     owner_request = cur_like.fetchall()
@@ -44,7 +45,7 @@ def post_likes():
         cur_like = connection.execute(
             "SELECT likeid "
             "FROM likes "
-            "WHERE postid = ? AND owner = ?", 
+            "WHERE postid = ? AND owner = ?",
             (postid, username, )
         )
         likeid_request = cur_like.fetchone()
@@ -53,17 +54,17 @@ def post_likes():
             "url": request.path + str(likeid_request['likeid']) + "/"
         }
         code = 200
-    
+
     # otherwise, insert into db and return object and 201 response
     else:
         # Insert new like in db with like owner and postid
         connection.execute(
             "INSERT INTO likes(owner, postid) "
-            "VALUES (?, ?)", 
+            "VALUES (?, ?)",
             (username, postid, )
         )
 
-        # Retrieve the ID of the most recently inserted item to show in response
+        # Get the ID of the most recently inserted item to show in response
         new_likeid = connection.execute(
             "SELECT last_insert_rowid() AS likeid"
         ).fetchone()
@@ -73,7 +74,7 @@ def post_likes():
             "url": request.path + str(new_likeid['likeid']) + "/"
         }
         code = 201
-    
+
     return jsonify(**like_context), code
 
 

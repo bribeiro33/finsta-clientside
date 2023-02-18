@@ -5,6 +5,7 @@ import flask
 from flask import jsonify
 import insta485
 
+
 def error_handler(status):
     """Error handler for client errors."""
     if status == 400:
@@ -18,6 +19,7 @@ def error_handler(status):
         "status_code": status
     }
     return jsonify(**error), status
+
 
 def access_control():
     """Make sure user is autheticated."""
@@ -131,6 +133,7 @@ def likes_json(cur, connection):
     }
     return likes
 
+
 def posts_json(postid_lte, size, page, cur):
     """Returns the JSON representation of paginated posts."""
     # cur here is all the relevant posts in the db
@@ -191,6 +194,7 @@ def post_json(cur, connection):
     }
     return post
 
+
 @insta485.app.route('/api/v1/', methods=["GET"])
 def get_services():
     """Return a list of services avaliable."""
@@ -202,6 +206,7 @@ def get_services():
         "url": "/api/v1/"
     }
     return jsonify(**context)
+
 
 @insta485.app.route("/api/v1/posts/", methods=["GET"])
 def get_posts():
@@ -242,7 +247,6 @@ def get_posts():
 
     json_result = posts_json(postid_lte, size, page, posts_response)
     return jsonify(**json_result)
-
 
 
 @insta485.app.route('/api/v1/posts/<int:postid_url_slug>/')

@@ -2,6 +2,7 @@
 from flask import jsonify, request
 import insta485
 
+
 @insta485.app.route('/api/v1/comments/', methods=["POST"])
 def post_comment():
     """Posts a new comment with the given text and id."""
@@ -17,12 +18,12 @@ def post_comment():
     # Error if post_id is a negative number or wasn't specified
     if postid < 0:
         return insta485.api.posts.error_handler(400)
-    
+
     # Make sure post exists in db, error if not found
     cur_post = connection.execute(
         "SELECT * "
         "FROM posts "
-        "WHERE postid = ?", 
+        "WHERE postid = ?",
         (postid, )
     )
     post_request = cur_post.fetchone()
@@ -32,7 +33,7 @@ def post_comment():
     # Insert new comment in db with values from request
     connection.execute(
         "INSERT INTO comments(owner, postid, text) "
-        "VALUES (?, ?, ?)", 
+        "VALUES (?, ?, ?)",
         (username, postid, text, )
     )
 
@@ -50,6 +51,7 @@ def post_comment():
         "url": request.path + str(new_commentid['commentid']) + "/"
     }
     return jsonify(**comment_context), 201
+
 
 @insta485.app.route('/api/v1/comments/<int:cmtid_slug>/', methods=["DELETE"])
 def delete_comment(cmtid_slug):
