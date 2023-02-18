@@ -33,7 +33,7 @@ export default function Post({ url }) {
         if (!ignoreStaleRequest) {
           setImgUrl(data.imgUrl);
           setOwner(data.owner);
-          setTime(moment(data.created).fromNow());
+          setTime(moment(moment.utc(data.created).format()).fromNow());
           setPostid(data.postid);
           setLikeStatus(data.likes.lognameLikesThis);
           setLikeCount(data.likes.numLikes);
