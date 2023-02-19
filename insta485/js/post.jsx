@@ -15,6 +15,7 @@ export default function Post({ url }) {
   const [postid, setPostid] = useState(null);
   const [likeStatus, setLikeStatus] = useState(null);
   const [likeCount, setLikeCount] = useState(null);
+  const [likeUrl, setLikeUrl] = useState(null);
   const [comments, setComments] = useState(null);
   const [postUrl, setPostUrl] = useState(null);
   const [ownerImgUrl, setOwnerImgUrl] = useState(null);
@@ -40,6 +41,7 @@ export default function Post({ url }) {
           setPostid(data.postid);
           setLikeStatus(data.likes.lognameLikesThis);
           setLikeCount(data.likes.numLikes);
+          setLikeUrl(data.likes.url);
           setComments(data.comments);
           setPostUrl(data.postShowUrl);
           setOwnerImgUrl(data.ownerImgUrl);
@@ -100,6 +102,8 @@ export default function Post({ url }) {
         setLikeStatus={setLikeStatus}
         likeCount={likeCount}
         setLikeCount={setLikeCount}
+        likeUrl={likeUrl}
+        setLikeUrl={setLikeUrl}
         postid={postid}
       />
       <p>

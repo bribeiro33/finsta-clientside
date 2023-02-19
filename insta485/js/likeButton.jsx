@@ -6,37 +6,24 @@ export default function LikeButton({
   setLikeStatus,
   likeCount,
   setLikeCount,
+  likeUrl,
+  setLikeUrl,
   postid,
 }) {
   const handleLikeButton = () => {
     // Use urls from REST API section to Post and Delete
     // If user originally liked post, get likeid and delete like
     if (likeStatus) {
-      fetch(`/api/v1/posts/${postid}/`, {
+      // splits URL and removes empty substrings
+      const slashes = likeUrl.split("/").filter((s) => s !== "");
+      // gets last substring, should be likeid
+      const likeid = slashes.pop();
+      // Delete like from api, need credentials
+      fetch(`/api/v1/likes/${likeid}/`, {
         credentials: "same-origin",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
       })
-        .then((response) => {
-          if (!response.ok) throw Error(response.statusText);
-          return response.json();
-        })
-        .then((data) => {
-          const likeUrl = data.likes.url;
-          // splits URL and removes empty substrings
-          const slashes = likeUrl.split("/").filter((s) => s !== "");
-          // gets last substring, should be likeid
-          const likeid = slashes.pop();
-          return fetch(`/api/v1/likes/${likeid}/`, {
-            credentials: "same-origin",
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-        })
         .then(() => {
           // flips like status to false
           setLikeStatus(false);
@@ -60,11 +47,13 @@ export default function LikeButton({
           if (!response.ok) throw Error(response.statusText);
           return response.json();
         })
-        .then(() => {
+        .then((data) => {
           // flips like status to false
           setLikeStatus(true);
           // increases like count by one as added one like
           setLikeCount(likeCount + 1);
+          // set like url to
+          setLikeUrl(data.url);
         })
         .catch((error) => console.log(error));
     }
@@ -86,5 +75,7 @@ LikeButton.propTypes = {
   setLikeStatus: PropTypes.func.isRequired,
   likeCount: PropTypes.number.isRequired,
   setLikeCount: PropTypes.func.isRequired,
+  likeUrl: PropTypes.string.isRequired,
+  setLikeUrl: PropTypes.func.isRequired,
   postid: PropTypes.number.isRequired,
 };
