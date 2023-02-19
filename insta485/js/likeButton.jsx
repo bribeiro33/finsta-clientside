@@ -15,6 +15,9 @@ export default function LikeButton({
       fetch(`/api/v1/posts/${postid}/`, {
         credentials: "same-origin",
         method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
         .then((response) => {
           if (!response.ok) throw Error(response.statusText);
@@ -29,6 +32,9 @@ export default function LikeButton({
           return fetch(`/api/v1/likes/${likeid}/`, {
             credentials: "same-origin",
             method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
           });
         })
         .then(() => {
@@ -46,6 +52,9 @@ export default function LikeButton({
       fetch(`/api/v1/likes/?postid=${postid}`, {
         credentials: "same-origin",
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
         .then((response) => {
           if (!response.ok) throw Error(response.statusText);

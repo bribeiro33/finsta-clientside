@@ -7,7 +7,12 @@ export default function InfScroll() {
   const [nextURL, setNextURL] = useState("/api/v1/posts/");
 
   const fetchData = useCallback(() => {
-    fetch(nextURL, { credentials: "same-origin" })
+    fetch(nextURL, {
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((response) => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();

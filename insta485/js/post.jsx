@@ -64,6 +64,9 @@ export default function Post({ url }) {
       fetch(`/api/v1/likes/?postid=${postid}`, {
         credentials: "same-origin",
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
         .then((response) => {
           if (!response.ok) throw Error(response.statusText);

@@ -35,6 +35,7 @@ export default function Comments({ comments, setComments, postid }) {
     fetch(`/api/v1/comments/${commentidToRemove}/`, {
       credentials: "same-origin",
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
     })
       .then(() => {
         console.log(`inside then: ${comments}`);
@@ -68,7 +69,7 @@ export default function Comments({ comments, setComments, postid }) {
               onClick={handleDeleteComment}
               data-option={comment.commentid}
             >
-              Delete Comment
+              Delete comment
             </button>
           )}
         </div>
