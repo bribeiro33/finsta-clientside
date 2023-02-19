@@ -1,6 +1,5 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import Post from "./post";
 import InfScroll from "./infscroll";
 
 // Create a root

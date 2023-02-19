@@ -16,6 +16,9 @@ export default function Post({ url }) {
   const [likeStatus, setLikeStatus] = useState(null);
   const [likeCount, setLikeCount] = useState(null);
   const [comments, setComments] = useState(null);
+  const [postUrl, setPostUrl] = useState(null);
+  const [ownerImgUrl, setOwnerImgUrl] = useState(null);
+  const [ownerShowUrl, setOwnerShowUrl] = useState(null);
 
   useEffect( () => {
     // Declare a boolean flag that we can use to cancel the API request.
@@ -38,6 +41,9 @@ export default function Post({ url }) {
           setLikeStatus(data.likes.lognameLikesThis);
           setLikeCount(data.likes.numLikes);
           setComments(data.comments);
+          setPostUrl(data.postShowUrl);
+          setOwnerImgUrl(data.ownerImgUrl);
+          setOwnerShowUrl(data.ownerShowUrl);
         }
       })
       .then(() => {
@@ -52,9 +58,6 @@ export default function Post({ url }) {
       ignoreStaleRequest = true;
     };
   }, [url]);
-  // Construct owner url path using owner object
-  const ownerUrl = `/users/${  owner  }/`;
-
   // Double click on img --> post new like, update state
   const handleImgLike = () => {
     // If user originally liked post, do nothing
@@ -80,12 +83,12 @@ export default function Post({ url }) {
 
   return (
     <div className="post">
-      <p><a href={ownerUrl}>{owner}</a></p>
+      <img src={ownerImgUrl} alt="post_owner_icon" />
+      <p><a href={ownerShowUrl}>{owner}</a></p>
       <img src={imgUrl} alt="post_image" onDoubleClick={handleImgLike}/>
-      <p>{time}</p>
-      <p>{postid}</p>
+      <p><a href={postUrl}>{time}</a></p>
       <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} likeCount={likeCount} setLikeCount={setLikeCount} postid={postid}/>
-      <p>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</p>
+      <p>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</p>
       <Comments comments={comments} setComments={setComments} postid={postid} />
     </div>
   );

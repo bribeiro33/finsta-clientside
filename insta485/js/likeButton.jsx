@@ -46,7 +46,7 @@ export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLi
 
     return (
         <button type="button" className="like-unlike-button" onClick={handleLikeButton}>
-            {likeStatus ? 'Unlike' : 'Like'}
+            {likeStatus ? 'unlike' : 'like'}
         </button>
     );
 }

@@ -7,10 +7,6 @@ export default function InfScroll() {
     const [nextURL, setNextURL] = useState("/api/v1/posts/");
 
     function fetchData(){
-        /*if (this.state.items.length >= 500) {
-            this.setState({ hasMore: false });
-            return;
-        }*/
         // a fake async api call like which sends
         // 20 more records in .5 secs
         fetch(nextURL, {credentials: "same-origin"})
@@ -31,7 +27,8 @@ export default function InfScroll() {
     }, []);
     return (
         <InfiniteScroll
-            dataLength={posts.length} //This is important field to render the next data
+            // This is important field to render the next data
+            dataLength={posts.length} 
             next={fetchData}
             hasMore={nextURL === "" ? false : true}
             loader={<h4>Loading...</h4>}>
