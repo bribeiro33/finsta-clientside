@@ -32,43 +32,42 @@ def access_control():
     if not flask.session:
         username = flask.request.authorization["username"]
         submitted_password = flask.request.authorization["password"]
-        
+
         # Abort if either field is empty
         if not username or not submitted_password:
             return error_handler(403)
-        
+
         # Authenticate user information by checking db
         connection = insta485.model.get_db()
-        cur_users = connection.execute(
+        cur_user_info = connection.execute(
             "SELECT password "
             "FROM users "
             "WHERE username = ?",
             (username, )
         )
-        correct_pass = cur_users.fetchone()
+        correct_password = cur_user_info.fetchone()
 
         # If username doesn't have a password, abort
-        if not correct_pass:
+        if not correct_password:
             return error_handler(403)
 
-        # Verify password by computing hashed pass w/ SHA512 of submitted 
+        # Verify password by computing hashed pass w/ SHA512 of submitted
         # password and comparing it against the db password
-        algorithm, salt, db_password = correct_pass['password'].split('$')
+        algorithm, salt, db_password = correct_password['password'].split('$')
 
-        # Slightly modified from spec
         hash_obj = hashlib.new(algorithm)
-        password_salted = salt + submitted_password
-        hash_obj.update(password_salted.encode('utf-8'))
+        pass_salted = salt + submitted_password
+        hash_obj.update(pass_salted.encode('utf-8'))
         submitted_password_hash = hash_obj.hexdigest()
 
         if submitted_password_hash != db_password:
             return error_handler(403)
-        
-        #Initialize cookies
+
+        # Initialize cookies
         flask.session["user"] = username
 
     # Cookie authentication
-    else: 
+    else:
         # Abort if no cookies
         if "user" not in flask.session:
             return error_handler(403)
@@ -79,22 +78,20 @@ def access_control():
 
 
 def comments_json(cur, connection):
-    """Returns json representation of comments."""
+    """Return json representation of comments."""
     # Query db for all comment info on given post
     cur_comments = connection.execute(
         "SELECT commentid, owner, text "
         "FROM comments "
-        "WHERE postid = ?", 
+        "WHERE postid = ?",
         (cur["postid"], )
     )
     comments_response = cur_comments.fetchall()
 
     # if comment owner and logged in user are the same, logname owns it
     for comment in comments_response:
-        comment["lognameOwnsThis"] = (
-            True if comment["owner"] == flask.session['user']
-            else False
-        )
+        comment["lognameOwnsThis"] = (comment["owner"] ==
+                                      flask.session['user'])
         comment["ownerShowUrl"] = "/users/" + comment["owner"] + '/'
         comment["url"] = "/api/v1/comments/" + str(comment["commentid"]) + '/'
 
@@ -107,10 +104,10 @@ def likes_json(cur, connection):
     like_cur = connection.execute(
         "SELECT likeid, owner "
         "FROM likes "
-        "WHERE postid = ?", 
+        "WHERE postid = ?",
         (cur["postid"], )
     )
-    #likes_response = cur_likes.fecthall()
+    # likes_response = cur_likes.fecthall()
     likes_response = like_cur.fetchall()
 
     # if the like's owner is the loggedin user, get the likeid
@@ -135,20 +132,19 @@ def likes_json(cur, connection):
 
 
 def posts_json(postid_lte, size, page, cur):
-    """Returns the JSON representation of paginated posts."""
+    """Return the JSON representation of paginated posts."""
     # cur here is all the relevant posts in the db
-    # TODO: check url result when empty, unsure
-    if not cur: 
-        next = ""
+    if not cur:
+        next_page = ""
         results = []
     else:
         results = []
         for post in cur:
-            post_json = {
+            single_post_json = {
                 "postid": post['postid'],
                 "url": "/api/v1/posts/" + str(post['postid']) + "/"
             }
-            results.append(post_json)
+            results.append(single_post_json)
 
         # postid_lte is default val if = maxsize, set to most recent post
         if postid_lte == sys.maxsize:
@@ -156,9 +152,9 @@ def posts_json(postid_lte, size, page, cur):
 
         # next is "" if number of posts < size of page
         if len(cur) < size:
-            next = ""
-        else: 
-            next = "/api/v1/posts/" + (
+            next_page = ""
+        else:
+            next_page = "/api/v1/posts/" + (
                     f"?size={size}&page={page+1}&postid_lte={postid_lte}"
                 )
     # url is the full url of the request, path + query
@@ -168,7 +164,7 @@ def posts_json(postid_lte, size, page, cur):
     if query_string:
         url = path + "?" + query_string
     posts_context = {
-        "next": next, 
+        "next": next_page,
         "results": results,
         "url": url
     }
@@ -183,7 +179,7 @@ def post_json(cur, connection):
         "comments": comments,
         "comments_url": "/api/v1/comments/?postid=" + str(cur['postid']),
         "created": str(cur['created']),
-        "imgUrl": "/uploads/" + cur['post_filename'], 
+        "imgUrl": "/uploads/" + cur['post_filename'],
         "likes": likes,
         "owner": cur['owner'],
         "ownerImgUrl": "/uploads/" + cur['user_filename'],
@@ -213,19 +209,20 @@ def get_posts():
     """Return the 10 newest posts."""
     username = access_control()
     # if access_control returns a tuple, that means an error occured
-    if type(username) is tuple:
+    if isinstance(username, tuple):
         return username
     # Get postid, size, and page from http request args
     size = flask.request.args.get("size", default=10, type=int)
     page = flask.request.args.get("page", default=0, type=int)
     # default should be to most recent postid, need to change once have posts
-    postid_lte = flask.request.args.get("postid_lte", default=sys.maxsize, type=int)
+    postid_lte = flask.request.args.get("postid_lte", default=sys.maxsize,
+                                        type=int)
     # size and page need to be non-neg ints, flask coerced to int
     if size < 0 or page < 0:
         return error_handler(400)
 
-    # offset specifies the number of rows to skip before starting to return rows
-    offset = size * page 
+    # offset specifies the row nums to skip before starting to return rows
+    offset = size * page
     # Query db for all user posts and user following posts
     # limit specifies the number of rows to return (default 10)
     connection = insta485.model.get_db()
@@ -242,7 +239,7 @@ def get_posts():
         "ORDER BY postid DESC "
         "LIMIT ? OFFSET ?",
         (username, postid_lte, username, postid_lte, size, offset, )
-    )   
+    )
     posts_response = cur_post.fetchall()
 
     json_result = posts_json(postid_lte, size, page, posts_response)
@@ -254,7 +251,7 @@ def get_post(postid_url_slug):
     """Return post on postid."""
     username = access_control()
     # if access_control returns a tuple, that means an error occured
-    if type(username) is tuple:
+    if isinstance(username, tuple):
         return username
     # Query db for post info given postid and owner info
     # User info isn't in posts page
