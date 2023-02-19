@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import moment from 'moment';
+import moment from "moment";
 import LikeButton from "./likeButton";
 import Comments from "./comments";
 // The parameter of this function is an object with a string called url inside it.
@@ -20,7 +20,7 @@ export default function Post({ url }) {
   const [ownerImgUrl, setOwnerImgUrl] = useState(null);
   const [ownerShowUrl, setOwnerShowUrl] = useState(null);
 
-  useEffect( () => {
+  useEffect(() => {
     // Declare a boolean flag that we can use to cancel the API request.
     let ignoreStaleRequest = false;
 
@@ -46,9 +46,7 @@ export default function Post({ url }) {
           setOwnerShowUrl(data.ownerShowUrl);
         }
       })
-      .then(() => {
-        
-      })
+      .then(() => {})
       .catch((error) => console.log(error));
 
     return () => {
@@ -62,8 +60,11 @@ export default function Post({ url }) {
   const handleImgLike = () => {
     // If user originally liked post, do nothing
     // If not, post new like
-    if (!likeStatus){
-      fetch(`/api/v1/likes/?postid=${postid}`, { credentials: "same-origin", method: 'POST' })
+    if (!likeStatus) {
+      fetch(`/api/v1/likes/?postid=${postid}`, {
+        credentials: "same-origin",
+        method: "POST",
+      })
         .then((response) => {
           if (!response.ok) throw Error(response.statusText);
           return response.json();
@@ -73,22 +74,34 @@ export default function Post({ url }) {
           setLikeCount(likeCount + 1);
         })
         .catch((error) => console.log(error));
-    }      
+    }
   };
-  
+
   // Render post components if state has updated, return empty if not
-  if (!comments){
-    return <div />
+  if (!comments) {
+    return <div />;
   }
 
   return (
     <div className="post">
       <img src={ownerImgUrl} alt="post_owner_icon" />
-      <p><a href={ownerShowUrl}>{owner}</a></p>
-      <img src={imgUrl} alt="post_image" onDoubleClick={handleImgLike}/>
-      <p><a href={postUrl}>{time}</a></p>
-      <LikeButton likeStatus={likeStatus} setLikeStatus={setLikeStatus} likeCount={likeCount} setLikeCount={setLikeCount} postid={postid}/>
-      <p>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</p>
+      <p>
+        <a href={ownerShowUrl}>{owner}</a>
+      </p>
+      <img src={imgUrl} alt="post_image" onDoubleClick={handleImgLike} />
+      <p>
+        <a href={postUrl}>{time}</a>
+      </p>
+      <LikeButton
+        likeStatus={likeStatus}
+        setLikeStatus={setLikeStatus}
+        likeCount={likeCount}
+        setLikeCount={setLikeCount}
+        postid={postid}
+      />
+      <p>
+        {likeCount} {likeCount === 1 ? "like" : "likes"}
+      </p>
       <Comments comments={comments} setComments={setComments} postid={postid} />
     </div>
   );
