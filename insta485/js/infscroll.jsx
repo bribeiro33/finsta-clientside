@@ -6,7 +6,7 @@ export default function InfScroll() {
     const [posts, setPosts] = useState([]);
     const [nextURL, setNextURL] = useState("/api/v1/posts/");
 
-    function fetchData() {
+    function fetchData(){
         /*if (this.state.items.length >= 500) {
             this.setState({ hasMore: false });
             return;
@@ -19,12 +19,16 @@ export default function InfScroll() {
                 return response.json();
             })
             .then((data) => {
+                // posts stores the posts that are going to be currently 
                 setPosts(posts.concat(data['results']));
                 setNextURL(data['next']);
             })
             .catch((error) => console.log(error));
     };
-    fetchData();
+    // useEffect calls fetchData to update the posts displayed only when at the bottom of scrolling
+    useEffect(() => {
+        fetchData();
+    }, []);
     return (
         <InfiniteScroll
             dataLength={posts.length} //This is important field to render the next data
@@ -33,5 +37,5 @@ export default function InfScroll() {
             loader={<h4>Loading...</h4>}>
             {posts.map((post) => <Post key={post.postid} url={post.url} />)}
         </InfiniteScroll>
-    )
+    );
 }
