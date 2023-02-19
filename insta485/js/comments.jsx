@@ -24,6 +24,19 @@ export default function Comments({ comments, setComments, postid }) {
         })
         .catch(error => console.log(error));  
     }
+
+    const handleDeleteComment = (e) => {
+        e.preventDefault();
+        const commentidToRemove = e.target.dataset.option;
+        fetch(`/api/v1/comments/${commentidToRemove}/`, { credentials: 'same-origin', method: 'DELETE' })
+            .then(() => {;
+                console.log(`inside then: ${comments}`);
+                setComments(comments.filter(comment => comment.commentid !== parseInt(commentidToRemove, 10)));
+                console.log(`after setting: ${comments}`);
+            })
+            .catch(error => console.log(error)); 
+    }
+    
     return (
         <div>
             {
@@ -36,8 +49,11 @@ export default function Comments({ comments, setComments, postid }) {
                             &nbsp;&nbsp;
                         </p> 
                         <span className="comment-text" style={{ display: "inline-block" }}> 
-                            { comment.text }
+                            { comment.text } &nbsp;&nbsp;
                         </span>
+                        {comment.lognameOwnsThis && (
+                            <button type="button" className="delete-comment-button" onClick={ handleDeleteComment } data-option={comment.commentid}>Delete Comment</button>
+                        )}
                     </div>
                 ))
             }

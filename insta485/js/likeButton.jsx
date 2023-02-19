@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from "prop-types";
 
 export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLikeCount, postid }) {
-    // const { likeStatus, setLikeStatus, likeCount, setLikeCount, postid } = props;
-
     const handleLikeButton = () => {
         // Use urls from REST API section to Post and Delete
         // If user originally liked post, get likeid and delete like
@@ -24,8 +22,8 @@ export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLi
                 .then(() => {
                     setLikeStatus(false);
                     setLikeCount(likeCount - 1);
-                });
-                // .catch((error) => {console.log(error)});
+                })
+                .catch((error) => {console.log(error)});
         }
         // If user originally disliked post, POST new like
         else {
@@ -41,7 +39,7 @@ export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLi
         <button type="button" className="like-unlike-button" onClick={handleLikeButton}>
             {likeStatus ? 'Unlike' : 'Like'}
         </button>
-    )
+    );
 }
 
 LikeButton.propTypes = {
@@ -49,5 +47,5 @@ LikeButton.propTypes = {
     setLikeStatus: PropTypes.func.isRequired,
     likeCount: PropTypes.number.isRequired,
     setLikeCount: PropTypes.func.isRequired,
-    postid: PropTypes.number.isRequired, // number
+    postid: PropTypes.number.isRequired, 
 };
