@@ -3,15 +3,17 @@ import PropTypes from "prop-types";
 
 export default function Comments({ comments, setComments, postid }) {
     const [input, setInput] = useState("")
+    
     // As user types, input changes and is displayed
     const handleChangeComment = (event) => {
         setInput(event.target.value);
     }
 
-    // TODO: Change to streamline
+    // on form submit, input posted to db as new comment
     const handleSubmitComment = (e) => {
         e.preventDefault();
         fetch(`/api/v1/comments/?postid=${postid}`, {
+            // check api like tests for where got headers info
             headers: {'Content-Type': 'application/json'},
             credentials: 'same-origin',
             method: 'POST',
@@ -25,6 +27,7 @@ export default function Comments({ comments, setComments, postid }) {
         .catch(error => console.log(error));  
     }
 
+    // on click of delete button, comment is removed by commentid
     const handleDeleteComment = (e) => {
         e.preventDefault();
         const commentidToRemove = e.target.dataset.option;
@@ -52,7 +55,7 @@ export default function Comments({ comments, setComments, postid }) {
                             { comment.text } &nbsp;&nbsp;
                         </span>
                         {comment.lognameOwnsThis && (
-                            <button type="button" className="delete-comment-button" onClick={ handleDeleteComment } data-option={comment.commentid}>Delete Comment</button>
+                            <button type="button" className="delete-comment-button" onClick={ handleDeleteComment } data-option={ comment.commentid }>Delete Comment</button>
                         )}
                     </div>
                 ))
