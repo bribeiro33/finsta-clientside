@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from "prop-types";
 
 export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLikeCount, postid }) {
-    // const { likeStatus, setLikeStatus, likeCount, setLikeCount, postid } = props;
-
     const handleLikeButton = () => {
         // Use urls from REST API section to Post and Delete
         // If user originally liked post, get likeid and delete like
         if (likeStatus){
-            fetch(`/api/v1/posts/${postid}/`, { method: 'GET' })
+            fetch(`/api/v1/posts/${postid}/`, { credentials: "same-origin", method: 'GET' })
                 .then((response) => {
                     if (!response.ok) throw Error(response.statusText);
                     return response.json();
@@ -19,21 +17,30 @@ export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLi
                     const slashes = likeUrl.split('/').filter(s => s !== '');
                     // gets last substring, should be likeid
                     const likeid = slashes.pop();
-                    return fetch(`/api/v1/likes/${likeid}/`, { method: 'DELETE' });
+                    return fetch(`/api/v1/likes/${likeid}/`, { credentials: "same-origin", method: 'DELETE' });
                 })
                 .then(() => {
+                    // flips like status to false
                     setLikeStatus(false);
+                    // decreases like count by one as deleted one like
                     setLikeCount(likeCount - 1);
-                });
-                // .catch((error) => {console.log(error)});
+                })
+                .catch((error) => {console.log(error)});
         }
         // If user originally disliked post, POST new like
         else {
-            fetch(`/api/v1/likes/?postid=${postid}`, { method: 'POST' })
-                .then(() => {
-                    setLikeStatus(true);
-                    setLikeCount(likeCount + 1);
-                }); 
+            fetch(`/api/v1/likes/?postid=${postid}`, { credentials: "same-origin", method: 'POST' })
+            .then((response) => {
+                if (!response.ok) throw Error(response.statusText);
+                return response.json();
+            })
+            .then(() => {
+                // flips like status to false
+                setLikeStatus(true);
+                // increases like count by one as added one like
+                setLikeCount(likeCount + 1);
+            })
+            .catch((error) => console.log(error));
         }      
     };
 
@@ -41,7 +48,7 @@ export default function LikeButton({ likeStatus, setLikeStatus, likeCount, setLi
         <button type="button" className="like-unlike-button" onClick={handleLikeButton}>
             {likeStatus ? 'Unlike' : 'Like'}
         </button>
-    )
+    );
 }
 
 LikeButton.propTypes = {
@@ -49,5 +56,5 @@ LikeButton.propTypes = {
     setLikeStatus: PropTypes.func.isRequired,
     likeCount: PropTypes.number.isRequired,
     setLikeCount: PropTypes.func.isRequired,
-    postid: PropTypes.number.isRequired, // number
+    postid: PropTypes.number.isRequired, 
 };

@@ -60,11 +60,16 @@ export default function Post({ url }) {
     // If user originally liked post, do nothing
     // If not, post new like
     if (!likeStatus){
-      fetch(`/api/v1/likes/?postid=${postid}`, { method: 'POST' })
+      fetch(`/api/v1/likes/?postid=${postid}`, { credentials: "same-origin", method: 'POST' })
+        .then((response) => {
+          if (!response.ok) throw Error(response.statusText);
+          return response.json();
+        })
         .then(() => {
           setLikeStatus(true);
           setLikeCount(likeCount + 1);
-        }); 
+        })
+        .catch((error) => console.log(error));
     }      
   };
   

@@ -5,10 +5,10 @@ import insta485
 
 @insta485.app.route('/api/v1/likes/', methods=["POST"])
 def post_likes():
-    """Posts a new like with the given id."""
+    """Post a new like with the given id."""
     username = insta485.api.posts.access_control()
     # if access_control returns a tuple, that means an error occured
-    if type(username) is tuple:
+    if isinstance(username, tuple):
         return username
     connection = insta485.model.get_db()
 
@@ -39,8 +39,8 @@ def post_likes():
     owner_request = cur_like.fetchall()
 
     # if like by owner already exists, return object and 200 response
-    ownerCheck = {'owner': username}
-    if ownerCheck in owner_request:
+    owner_check = {'owner': username}
+    if owner_check in owner_request:
         # Get the likeid of the username's like
         cur_like = connection.execute(
             "SELECT likeid "
@@ -83,7 +83,7 @@ def delete_likes(likeid_slug):
     """Delete a comment given a commentid."""
     username = insta485.api.posts.access_control()
     # if access_control returns a tuple, that means an error occured
-    if type(username) is tuple:
+    if isinstance(username, tuple):
         return username
     connection = insta485.model.get_db()
 
